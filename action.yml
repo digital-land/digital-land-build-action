@@ -1,0 +1,33 @@
+name: "Digital-Land Build Action"
+description: "Runs common DL build steps and pushes messages to Slack"
+inputs:
+  clobber-first:
+    description: "Run make clobber prior to building"
+    required: false
+    default: true
+runs:
+  using: "composite"
+  steps:
+
+    - name: Print dir tree
+      run: sudo apt-get update && sudo apt-get install tree && tree
+      shell: bash
+
+    - name: Update makerules
+      run: make makerules
+
+    - name: Commit updated makerules
+      run: make commit-makerules
+
+    - name: Install dependencies
+      run: make init
+
+    - name: Force rebuild of pages
+      if: ${{ inputs.clobber-first }}
+      run: make clobber-docs
+
+    - name: Build docs
+      run: make render
+
+    - name: Commit docs
+      run: make commit-docs
